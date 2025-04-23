@@ -1,0 +1,160 @@
+version: '3.8'
+
+services:
+  # Java - Spring Boot (Tomcat)
+  spring-tomcat:
+    build: ./spring-tomcat
+    ports:
+      - "8001:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - fastserve-network
+
+  # Java - Spring Boot (Netty/WebFlux)
+  spring-netty:
+    build: ./spring-netty
+    ports:
+      - "8002:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - fastserve-network
+
+  # Node.js - Express
+  node-express:
+    build: ./node-express
+    ports:
+      - "8003:3000"
+    networks:
+      - fastserve-network
+
+  # Node.js - Fastify
+  node-fastify:
+    build: ./node-fastify
+    ports:
+      - "8004:3000"
+    networks:
+      - fastserve-network
+
+  # Go - net/http
+  go-nethttp:
+    build: ./go-nethttp
+    ports:
+      - "8005:8080"
+    networks:
+      - fastserve-network
+
+  # Go - Fiber
+  go-fiber:
+    build: ./go-fiber
+    ports:
+      - "8006:8080"
+    networks:
+      - fastserve-network
+
+  # Python - Flask
+  python-flask:
+    build: ./python-flask
+    ports:
+      - "8007:5000"
+    networks:
+      - fastserve-network
+
+  # Python - FastAPI
+  python-fastapi:
+    build: ./python-fastapi
+    ports:
+      - "8008:8000"
+    networks:
+      - fastserve-network
+
+  # Rust - Actix-web
+  rust-actix:
+    build: ./rust-actix
+    ports:
+      - "8009:8080"
+    networks:
+      - fastserve-network
+
+  # Rust - Axum
+  rust-axum:
+    build: ./rust-axum
+    ports:
+      - "8010:8080"
+    networks:
+      - fastserve-network
+
+  # C++ - Pistache
+  cpp-pistache:
+    build: ./cpp-pistache
+    ports:
+      - "8011:8080"
+    networks:
+      - fastserve-network
+
+  # C# - ASP.NET Core
+  csharp-aspnet:
+    build: ./csharp-aspnet
+    ports:
+      - "8012:8080"
+    networks:
+      - fastserve-network
+
+  # Nginx Reverse Proxy
+  nginx-proxy:
+    build: ./nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - spring-tomcat
+      - spring-netty
+      - node-express
+      - node-fastify
+      - go-nethttp
+      - go-fiber
+      - python-flask
+      - python-fastapi
+      - rust-actix
+      - rust-axum
+      - cpp-pistache
+      - csharp-aspnet
+    networks:
+      - fastserve-network
+
+  # Redis 캐시 서버
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - fastserve-network
+
+  # Prometheus 모니터링
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - fastserve-network
+
+  # Grafana 대시보드
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    networks:
+      - fastserve-network
+
+networks:
+  fastserve-network:
+    driver: bridge 
